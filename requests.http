@@ -1,0 +1,15 @@
+### List seeded products
+GET http://localhost:8081/api/products
+
+### Create an order
+POST http://localhost:8082/api/orders
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 2,
+  "customerEmail": "buyer@example.com"
+}
+
+### Find orders by customer
+GET http://localhost:8082/api/orders?customerEmail=buyer@example.com

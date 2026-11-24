@@ -1,0 +1,53 @@
+services:
+  catalog-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: catalog
+      POSTGRES_USER: catalog
+      POSTGRES_PASSWORD: catalog
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  order-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: orders
+      POSTGRES_PASSWORD: orders
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  catalog-service:
+    build: ./catalog-service
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://catalog-db:5432/catalog
+      DB_USERNAME: catalog
+      DB_PASSWORD: catalog
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+
+  order-service:
+    build: ./order-service
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://order-db:5432/orders
+      DB_USERNAME: orders
+      DB_PASSWORD: orders
+      CATALOG_BASE_URL: http://catalog-service:8081
+    depends_on:
+      order-db:
+        condition: service_healthy
+      catalog-service:
+        condition: service_started
+    ports:
+      - "8082:8082"
